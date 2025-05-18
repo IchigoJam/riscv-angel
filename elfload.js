@@ -1,11 +1,15 @@
+import { elfRunNextInst } from "./elfrun.js";
+import { Long } from "./Long.js";
+
 // Load ELF64 file
 
 // loadElf is passed as the callback function to binary file reader.
 // - May assume access to RISCV (the processor). 
 // - Setup done in run.html
-function loadElf(binfile, filename, filesList) {
+function loadElf(RISCV, binfile, filename, filesList) {
+    binfile.charCodeAt = n => binfile[n];
     //binfile = binfile.Content;
-    globfilename = filename; // global access to filename
+    //globfilename = filename; // global access to filename
     //document.getElementById("testresult").innerHTML = "Loading " + filename;
     var elf = {};
     var magic = ((binfile.charCodeAt(0) & 0xFF) << 24) | ((binfile.charCodeAt(1) & 0xFF) << 16) |
@@ -108,11 +112,11 @@ function loadElf(binfile, filename, filesList) {
     RISCV.reset_wall_clock();
 
     // GET breakpoints and make global dict
-    breakpoints = "";
+    let breakpoints = "";
     breakpoints = breakpoints.trim();
     breakpoints = breakpoints.replace(/ +(?= )/g, ""); // strip extra spaces
     breakpoints = breakpoints.split(" ");
-    breaks = new Object();
+    const breaks = new Object();
     for (var i = 0; i < breakpoints.length; i++) {
         breaks[parseInt(breakpoints[i], 16)] = 0x1;
     }
@@ -149,7 +153,8 @@ function bytes_to_int(input, addr, numbytes, end) {
     return output;
 }
 
-function chainedFileLoader(binFile, filename, filesList) {
+export function chainedFileLoader(RISCV, binFile, filename, filesList, handle_file_continue) {
+    console.log("fd", RISCV.pname_fd)
         // add binFile and filename to global array
         RISCV.pname_fd[filename] = RISCV.next_fd;
         RISCV.fd_pname[RISCV.next_fd] = filename;
@@ -160,7 +165,7 @@ function chainedFileLoader(binFile, filename, filesList) {
             handle_file_continue(filesList);
         } else {
             // call elfload with vmlinux kernel to start boot
-            loadElf(RISCV.binaries[RISCV.pname_fd["vmlinux"]], "vmlinux", filesList);
+            loadElf(RISCV, RISCV.binaries[RISCV.pname_fd["vmlinux"]], "vmlinux", filesList);
             // if cmdargs is empty and next fd is 5, assume fd 4 is user prog:
             var arg = "";
             if (arg === "" && RISCV.next_fd == 5) {
@@ -171,10 +176,10 @@ function chainedFileLoader(binFile, filename, filesList) {
                 }
             }
 
-            cont = true;
+            let cont = true;
             // now, run!
             while (cont) {
-                cont = elfRunNextInst();
+                cont = elfRunNextInst(RISCV);
             }
             return;
         }

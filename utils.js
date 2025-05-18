@@ -1,3 +1,5 @@
+import { TRAPS } from "./mappings.js";
+
 // utils for the cpu
 
 // Fill HTML register table for user 
@@ -34,8 +36,8 @@ function update_debug_table(propsarr, tab) {
     tab.innerHTML = addinnerhtml;
 }
 
-consoleFlashRegEx = new RegExp(String.fromCharCode(0x2589), "g");
-consoleFlashRegEx2 = new RegExp(String.fromCharCode(0x2581), "g");
+const consoleFlashRegEx = new RegExp(String.fromCharCode(0x2589), "g");
+const consoleFlashRegEx2 = new RegExp(String.fromCharCode(0x2581), "g");
 
 function flashConsoleCursor() {
     inner = document.getElementById("console").innerHTML;
@@ -80,7 +82,7 @@ RISCVError.prototype = Error.prototype;
 
 // Special Error class to represent Traps
 // memaddr is for load/store misaligned/access faults
-function RISCVTrap(message, memaddr) {
+export function RISCVTrap(message, memaddr) {
     this.name = "RISCVTrap";
     this.message = (message || "");
     this.memaddr = memaddr;
@@ -136,7 +138,7 @@ function num_to_hexstr(numberin) {
 
 // unsigned comparison of longs
 // return true if long1 < long2
-function long_less_than_unsigned(long1, long2) {
+export function long_less_than_unsigned(long1, long2) {
     var long1up = signed_to_unsigned(long1.getHighBits());
     var long2up = signed_to_unsigned(long2.getHighBits());
 
@@ -161,7 +163,7 @@ function long_less_than_unsigned(long1, long2) {
  * Numbers (64 bit float), and then comparing these values without performing
  * any bitwise ops on them will effectively do an unsigned comparison 
  */
-function signed_to_unsigned(inputNum) {
+export function signed_to_unsigned(inputNum) {
     if ((inputNum & 0x80000000) == 0) {
         return inputNum;
     } else {

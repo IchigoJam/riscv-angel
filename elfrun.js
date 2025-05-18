@@ -1,3 +1,9 @@
+import { runInstruction } from "./inst_src.js";
+import { PCR, SR } from "./mappings.js";
+import { RISCVTrap } from "./utils.js";
+import { handle_trap } from "./trap.js";
+import { postMessage } from "./postMessage.js";
+
 // run one instruction at a time, isolate from elfload
 
 var readTest = [];
@@ -5,7 +11,7 @@ var readTest = [];
 var lastCharWritten = 0;
 
 // ASSUME GLOBAL ACCESS TO RISCV
-function elfRunNextInst() {
+export function elfRunNextInst(RISCV) {
     var instVal;
     var stopCount = 10000;
     var tryCount = 0;
@@ -30,7 +36,7 @@ function elfRunNextInst() {
                 RISCV.priv_reg[PCR["CSR_FROMHOST"]["num"]] = new Long(0x100 | (readTest.shift().charCodeAt(0) & 0xFF), 0x01000000);
                 RISCV.priv_reg[PCR["CSR_STATUS"]["num"]] = RISCV.priv_reg[PCR["CSR_STATUS"]["num"]] | 0x40000000;
                 var InterruptException = new RISCVTrap("Host interrupt");
-                handle_trap(InterruptException);
+                handle_trap(InterruptException, RISCV);
             } else {
                 // wait for user input
                 tryCount += 1;
@@ -54,7 +60,7 @@ function elfRunNextInst() {
         
         instVal = RISCV.load_inst_from_mem(RISCV.pc);
         if (!RISCV.excpTrigg) {
-            runInstruction(instVal); // , RISCV);
+            runInstruction(instVal, RISCV);
         }
         // trap handling
         if (RISCV.excpTrigg) {
@@ -67,7 +73,7 @@ function elfRunNextInst() {
                 //console.log("HANDLING TRAP: " + e.message);
                 var e = RISCV.excpTrigg;
                 RISCV.excpTrigg = undefined;
-                handle_trap(e);
+                handle_trap(e, RISCV);
             }
         } 
 
@@ -81,7 +87,7 @@ function elfRunNextInst() {
                         // set IP bit for timer interrupt
                         RISCV.priv_reg[PCR["CSR_STATUS"]["num"]] = RISCV.priv_reg[PCR["CSR_STATUS"]["num"]] | 0x80000000;
                         var InterruptException = new RISCVTrap("Timer interrupt");
-                        handle_trap(InterruptException);
+                        handle_trap(InterruptException, RISCV);
                 }
             }
         }

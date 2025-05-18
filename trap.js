@@ -1,6 +1,10 @@
+import { PCR, SR } from "./mappings.js";
+import { Long } from "./Long.js";
+import { signExtLT32_64 } from "./inst_src.js";
+
 // trap handling
 
-function handle_trap(trap){
+export function handle_trap(trap, RISCV) {
     //first, need to check EI bit. if it is not one, processor enters ERROR
     //mode (throw new RISCVError("ERROR");)
     if ((RISCV.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_EI"]) == 0x0) {

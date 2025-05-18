@@ -1,3 +1,12 @@
+import { Long } from "./Long.js";
+import { PCR, SR } from "./mappings.js";
+import { long_less_than_unsigned, RISCVTrap, signed_to_unsigned } from "./utils.js";
+import { TLB, TLBSIZE, ITLB, ITLBstuff } from "./mmu.js";
+import { BigInteger } from "./lib/javascript-biginteger/biginteger.js";
+import { postMessage } from "./postMessage.js";
+
+//const BigInteger = n => new BigInt(n);
+
 const inst = {};
 inst.get_opcode = (raw) => raw & 0x7F;
 inst.get_rd = (raw) => ((raw >>> 7) & 0x1F);
@@ -12,7 +21,7 @@ inst.get_B_imm = (raw) => (((((raw >> 20) & 0xFFFFFFE0) | ((raw >>> 7) & 0x00000
 inst.get_U_imm = (raw) => ((raw & 0xFFFFF000));
 inst.get_J_imm = (raw) => (((raw >> 20) & 0xFFF007FE) | ((raw >>> 9) & 0x00000800) | (raw & 0x000FF000));
 
-function check_HTIF() {
+function check_HTIF(RISCV) {
     var toHostVal = RISCV.priv_reg[PCR["CSR_TOHOST"]["num"]];
     // check toHost, output to JS console, clear it
     if (toHostVal.high_ != 0 || toHostVal.low_ != 0){
@@ -110,7 +119,7 @@ function check_HTIF() {
     }
 }
 
-function signExtLT32_64(quantity) {
+export function signExtLT32_64(quantity) {
     return new Long(quantity|0, quantity >> 31);
 }
 
@@ -118,11 +127,11 @@ function signExtLT32_64(quantity) {
 // sign extend a < 32 bit number to 64 bits based on bit
 function signExtLT32_64_v(quantity, bit) {
     // bits numbered 31, 30, .... 2, 1, 0
-    bitval = ((quantity|0) >> bit) & 0x00000001;
+    const bitval = ((quantity|0) >> bit) & 0x00000001;
     if (bitval === 0) {
         return new Long(quantity|0, 0x00000000);
     } else if (bitval === 1) {
-        mask = 0x80000000;
+        let mask = 0x80000000;
         mask = mask >> (31-bit) 
         return new Long((quantity | mask), 0xFFFFFFFF);
     } else {
@@ -132,7 +141,7 @@ function signExtLT32_64_v(quantity, bit) {
 
 
 // Takes instruction obj and CPU obj as args, performs computation on given CPU
-function runInstruction(raw) { //, RISCV) {
+export function runInstruction(raw, RISCV) {
     // force x0 (zero) to zero
 
 //    RISCV.gen_reg[0] = Long.ZERO;
@@ -915,7 +924,7 @@ function runInstruction(raw) { //, RISCV) {
                             }
                             RISCV.pc += 4;
                             // if toHost is written, do stuff:
-                            check_HTIF();
+                            check_HTIF(RISCV);
                             break;
 
                         // CSRRS
@@ -938,7 +947,7 @@ function runInstruction(raw) { //, RISCV) {
                             RISCV.set_pcr(inst.get_CSR_imm(raw), temp);
                             RISCV.pc += 4;
                             // if toHost is written, do stuff:
-                            check_HTIF();
+                            check_HTIF(RISCV);
 
                             break;
 
@@ -956,7 +965,7 @@ function runInstruction(raw) { //, RISCV) {
                             RISCV.set_pcr(inst.get_CSR_imm(raw), temp);
                             RISCV.pc += 4;
                             // if toHost is written, do stuff:
-                            check_HTIF();
+                            check_HTIF(RISCV);
 
                             break;
 
@@ -974,9 +983,9 @@ function runInstruction(raw) { //, RISCV) {
                             }
                             RISCV.set_pcr(inst.get_CSR_imm(raw), temp);
                             if (inst.get_CSR_imm(raw) == PCR["CSR_FATC"]["num"]) {
-                                TLB = new Uint32Array(TLBSIZE);
-                                ITLB = new Uint32Array(ITLBSIZE);
-                                ITLBstuff = new Uint32Array(ITLBSIZE);
+                                TLB.fill(0); //TLB = new Uint32Array(TLBSIZE);
+                                ITLB.fill(0); // ITLB = new Uint32Array(ITLBSIZE);
+                                ITLBstuff.fill(0); // ITLBstuff = new Uint32Array(ITLBSIZE);
 
 //                                console.log("flushing TLB from CSRRWI");
 //                                console.log("Current ASID is " + stringIntHex(RISCV.priv_reg[PCR["CSR_ASID"]["num"]]));
@@ -984,7 +993,7 @@ function runInstruction(raw) { //, RISCV) {
                             }
                             RISCV.pc += 4;
                             // if toHost is written, do stuff:
-                            check_HTIF();
+                            check_HTIF(RISCV);
 
                             break;
 
@@ -1002,7 +1011,7 @@ function runInstruction(raw) { //, RISCV) {
                             RISCV.set_pcr(inst.get_CSR_imm(raw), temp);
                             RISCV.pc += 4;
                             // if toHost is written, do stuff:
-                            check_HTIF();
+                            check_HTIF(RISCV);
 
                             break;
 
@@ -1020,7 +1029,7 @@ function runInstruction(raw) { //, RISCV) {
                             RISCV.set_pcr(inst.get_CSR_imm(raw), temp);
                             RISCV.pc += 4;
                             // if toHost is written, do stuff:
-                            check_HTIF();
+                            check_HTIF(RISCV);
 
                             break;
 

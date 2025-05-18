@@ -1,3 +1,7 @@
+import { Long } from "./Long.js";
+import { PCR, CONSTS } from "./mappings.js";
+import { RISCVTrap } from "./utils.js";
+
 // simulated memory management unit,
 // needs to intercept all memory loading calls
 
@@ -13,19 +17,19 @@ var PTE_SW = 0x80;
 var PTE_SX = 0x100;
 
 // [todo] - simple TLB (try just a dictionary)
-var TLBSIZE = 524288;
-var TLB = new Uint32Array(TLBSIZE);
+export var TLBSIZE = 524288;
+export var TLB = new Uint32Array(TLBSIZE);
 
-var ITLBSIZE = 4;
-var ITLB = new Uint32Array(ITLBSIZE);
-var ITLBstuff = new Uint32Array(ITLBSIZE);
+export var ITLBSIZE = 4;
+export var ITLB = new Uint32Array(ITLBSIZE);
+export var ITLBstuff = new Uint32Array(ITLBSIZE);
 //var TLBON = true;
 
 //var TLBcount = 0;
 //var NONcount = 0;
 //var Totcount = 0;
 
-function insttranslate(addrlo, access_type) {
+export function insttranslate(addrlo, access_type, RISCV) {
     var origaddrVPN = addrlo >>> 13;
     var pte;
     var paddr;
@@ -38,7 +42,7 @@ function insttranslate(addrlo, access_type) {
         return (ITLB[origaddrVPN & 0x3] & 0xFFFFE000) | (addrlo & 0x1FFF);
     } else {
         addr = new Long(addrlo, addrlo >> 31)
-        pte = walk(addr).getLowBitsUnsigned();
+        pte = walk(addr, RISCV).getLowBitsUnsigned();
     }
 
     paddr = (pte & 0xFFFFE000) | (addrlo & 0x1FFF);
@@ -86,7 +90,7 @@ function insttranslate(addrlo, access_type) {
 
 // performs address translation
 // addr MUST BE A LONG
-function translate(addr, access_type) {
+export function translate(addr, access_type, RISCV) {
     //Totcount += 1;
     var origaddr = addr.getLowBitsUnsigned();
 //    if ((origaddr & 0xFF000000) == 0x55000000) {
@@ -102,7 +106,7 @@ function translate(addr, access_type) {
     pte = TLB[origaddrVPN];
     if (!pte) {
         //NONcount += 1;
-        pte = walk(addr).getLowBitsUnsigned();
+        pte = walk(addr, RISCV).getLowBitsUnsigned();
         TLB[origaddrVPN] = pte;
     }
 
@@ -143,7 +147,7 @@ function translate(addr, access_type) {
 var LONG3FF = new Long(0x3FF, 0x0);
 // does the page table walk only - no permission checks here
 // vaddr is Long
-function walk(vaddr) {
+function walk(vaddr, RISCV) {
     // [todo] - add additional checking from the top of mmu.cc's walk here later
 
 //    var pte = new Long(0x0, 0x0);

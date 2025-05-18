@@ -1,14 +1,14 @@
 // Contains various mappings/hardcoded values used by the cpu
 
 // for memory accesses
-function CONSTS() {
+function _CONSTS() {
     this.READ = 0;
     this.WRITE = 1;
     this.EXEC = 2;
 }
 
 // instantiate a copy
-CONSTS = new CONSTS();
+export const CONSTS = new _CONSTS();
 
 // register mappings from disasm.cc
 var reg_maps = [
@@ -18,7 +18,7 @@ var reg_maps = [
     "a6", "a7", "t0", "t1", "t2", "t3", "t4", "gp"
 ]
 
-var PCR = {
+export var PCR = {
     "CSR_FFLAGS":    {"num": 0x001, "width": 64,}, // width not confirmed
     "CSR_FRM":       {"num": 0x002, "width": 64,}, // width not confirmed
     "CSR_FCSR":      {"num": 0x003, "width": 64,}, // width not confirmed
@@ -52,7 +52,7 @@ var PCR = {
 };
 
 // status register bit mappings
-var SR = {
+export var SR = {
     "SR_S"  :  0x00000001,
     "SR_PS"  :  0x00000002,
     "SR_EI"  :  0x00000004,
@@ -68,7 +68,7 @@ var SR = {
 
 
 // TRAPS: [exception code, interruptBit]
-var TRAPS = {
+export var TRAPS = {
     "Instruction Address Misaligned": [0x0, 0x0],
     "Instruction Access Fault": [0x1, 0x0],
     "Illegal Instruction": [0x2, 0x0],

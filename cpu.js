@@ -1,3 +1,8 @@
+import { Long } from "./Long.js";
+import { PCR, SR } from "./mappings.js";
+import { insttranslate, translate } from "./mmu.js";
+import { RISCVTrap } from "./utils.js";
+
 // Possible optimizations: choose/attach load/store methods at time of object 
 // creation instead of if/elses comparing strings at every call - however
 // need to remember to update methods if changing endianness after instantiation
@@ -6,7 +11,7 @@
 
 // CPU class. Contains regfile, memory, and special registers
 // memamt is memory size in Mebibytes, default to 32
-function CPU(memamt) {
+export function CPU(memamt) {
     memamt = typeof memamt !== 'undefined' ? memamt : 10;
 
     this.memamount = memamt; // for use by the kernel
@@ -90,8 +95,8 @@ function CPU(memamt) {
     function store_double_to_mem(addr, val) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 1);
-            if (RISCV.excpTrigg) {
+            addr = translate(addr, 1, this);
+            if (this.excpTrigg) {
                 return;
             }
         } else {
@@ -99,7 +104,7 @@ function CPU(memamt) {
         }
 
         if (addr & 0x7) {
-            RISCV.excpTrigg = new RISCVTrap("Store Address Misaligned", addr);
+            this.excpTrigg = new RISCVTrap("Store Address Misaligned", addr);
             return;
         }
         addr = addr >> 2;
@@ -112,15 +117,15 @@ function CPU(memamt) {
     function store_word_to_mem(addr, val) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 1);
-            if (RISCV.excpTrigg) {
+            addr = translate(addr, 1, this);
+            if (this.excpTrigg) {
                 return;
             }
         } else {
             addr = addr.getLowBitsUnsigned();
         }
         if (addr & 0x3) {
-            RISCV.excpTrigg =  new RISCVTrap("Store Address Misaligned", addr);
+            this.excpTrigg =  new RISCVTrap("Store Address Misaligned", addr);
             return;
         }
         this.memory[addr >> 2] = val;
@@ -129,8 +134,8 @@ function CPU(memamt) {
     function store_half_to_mem(addr, val) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 1);
-            if (RISCV.excpTrigg) {
+            addr = translate(addr, 1, this);
+            if (this.excpTrigg) {
                 return;
             }
         } else {
@@ -139,7 +144,7 @@ function CPU(memamt) {
 
 
         if (addr & 0x1) {
-            RISCV.excpTrigg =  new RISCVTrap("Store Address Misaligned", addr);
+            this.excpTrigg =  new RISCVTrap("Store Address Misaligned", addr);
             return;
         }
         this.memory[(addr >> 2)] &= ~(0xFFFF << ((addr & 0x2) << 3));
@@ -149,8 +154,8 @@ function CPU(memamt) {
     function store_byte_to_mem(addr, val) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 1);
-            if (RISCV.excpTrigg) {
+            addr = translate(addr, 1, this);
+            if (this.excpTrigg) {
                 return;
             }
         } else {
@@ -163,15 +168,15 @@ function CPU(memamt) {
     function load_double_from_mem(addr) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 0);
-            if (RISCV.excpTrigg){
+            addr = translate(addr, 0, this);
+            if (this.excpTrigg){
                 return;
             }
         } else {
             addr = addr.getLowBitsUnsigned();
         }
         if (addr & 0x7) {
-            RISCV.excpTrigg =  new RISCVTrap("Load Address Misaligned", addr);
+            this.excpTrigg =  new RISCVTrap("Load Address Misaligned", addr);
             return;
         }
         addr = addr >> 2;
@@ -181,7 +186,7 @@ function CPU(memamt) {
     function load_double_from_mem_raw(addr) {
         addr = addr.getLowBitsUnsigned();
         if (addr & 0x7) {
-            RISCV.excpTrigg =  new RISCVTrap("Load Address Misaligned", addr);
+            this.excpTrigg =  new RISCVTrap("Load Address Misaligned", addr);
             return;
         }
         addr = addr >> 2;
@@ -191,8 +196,8 @@ function CPU(memamt) {
     function load_word_from_mem(addr) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 0);
-            if (RISCV.excpTrigg) {
+            addr = translate(addr, 0, this);
+            if (this.excpTrigg) {
                 return;
             }
         } else {
@@ -201,7 +206,7 @@ function CPU(memamt) {
 
 
         if (addr & 0x3) {
-            RISCV.excpTrigg = new RISCVTrap("Load Address Misaligned", addr);
+            this.excpTrigg = new RISCVTrap("Load Address Misaligned", addr);
             return;
         }
         return this.memory[addr >> 2];
@@ -210,15 +215,15 @@ function CPU(memamt) {
     function load_half_from_mem(addr) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 0);
-            if (RISCV.excpTrigg) {
+            addr = translate(addr, 0, this);
+            if (this.excpTrigg) {
                 return;
             }
         } else {
             addr = addr.getLowBitsUnsigned();
         }
         if (addr & 0x1) {
-            RISCV.excpTrigg =  new RISCVTrap("Load Address Misaligned", addr);
+            this.excpTrigg =  new RISCVTrap("Load Address Misaligned", addr);
         }
         return (this.memory[addr >> 2] >> ((addr & 0x2) << 3)) & 0xFFFF;
     }
@@ -226,8 +231,8 @@ function CPU(memamt) {
     function load_byte_from_mem(addr) {
         var vmOn = ((this.priv_reg[PCR["CSR_STATUS"]["num"]] & SR["SR_VM"]) != 0x0);
         if (vmOn) { 
-            addr = translate(addr, 0);
-            if (RISCV.excpTrigg) {
+            addr = translate(addr, 0, this);
+            if (this.excpTrigg) {
                 return;
             }
         } else {
@@ -272,14 +277,14 @@ function CPU(memamt) {
     function load_inst_from_mem(addr) {
         var vmOn = ((this.priv_reg[0x50A] & 0x80));
         if (vmOn) { 
-            addr = insttranslate(addr, 2);
-            if (RISCV.excpTrigg) {
+            addr = insttranslate(addr, 2, this);
+            if (this.excpTrigg) {
                 return;
             }
         }
         /* UNSAFE when removed
         if (addr & 0x3) {
-            RISCV.excpTrigg =  new RISCVTrap("Instruction Address Misaligned", addr);
+            this.excpTrigg =  new RISCVTrap("Instruction Address Misaligned", addr);
             return;
         }
         */
