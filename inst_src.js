@@ -1,4 +1,3 @@
-//import * as inst from "./inst_src.js";
 const inst = {};
 inst.get_opcode = (raw) => raw & 0x7F;
 inst.get_rd = (raw) => ((raw >>> 7) & 0x1F);

@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>term.js demo</title>
+</head><body>
+<h1>term.js demo</h1>
+
+<div id="divterm"></div>
+
+<style>
+#divterm:focus {
+  outline: none;
+  border: none;
+}
+#divterm {
+  padding: 5px;
+  height: 700px;
+  background-color:black;
+  overflow: hidden;
+  color:white;
+  font-size: 110%;
+  font-family: Monaco, Consolas, Lucida Console, monospace;
+}
+</style>
+
+<script type="module">
+import { Terminal } from "./lib/term.js";
+
+const term = new Terminal({
+  cols: 80,
+  rows: 24,
+  cursorBlink: true,
+  useStyle: true,
+});
+
+term.open(document.getElementById("divterm"));
+term.handler = (e) => {
+  const code = e.charCodeAt(0);
+  if (code == 13) {
+    term.write("\r");
+    term.write("\n");
+  } else {
+    term.write(e);
+  }
+};
+
+</script>

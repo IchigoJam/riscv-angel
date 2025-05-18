@@ -15,4 +15,4 @@ Start a webserver in the angel directory, e.g.
 
     python -m SimpleHTTPServer 8000
     
-Visit localhost:8000/run.html in your browser.
+Visit localhost:8000 in your browser.

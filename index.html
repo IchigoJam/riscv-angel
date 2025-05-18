@@ -1,6 +1,4 @@
-<html>
-<head> 
-
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
 <title>ANGEL - RISC-V JS ISA Simulator</title>
 
 <link rel="stylesheet" href="lib/shepherd-0.4.2/shepherd-theme-arrows.css" />
@@ -12,7 +10,6 @@
 
 
 <!-- load angel interface components -->
-<script src="lib/term.js"></script>
 <script src="devices/character.js"></script>
 <script src="utils.js"></script>
 
@@ -47,35 +44,6 @@
     }
 </style>
 
-<!-- angel functions -->
-<script>
-function runWorker() {
-    $('#bootButton').attr('disabled', true);
-    $('#bootButton').html("Running...");
-    $('#bootButton').prop("onclick", null);
-    myWorker = new Worker("webworker.js");
-    myWorker.onmessage = function(oEvent) {
-        if (oEvent.data.type == "t") {
-            // handle term event
-//            write_to_term(oEvent.data.d);
-            term.write(String.fromCharCode(oEvent.data.d));
-        } else if (oEvent.data.type == "p") {
-            // handle prog bar event
-            document.getElementById("bar").style.width = (oEvent.data.d*100).toString() + "%";
-        } else if (oEvent.data.type == "tr") {
-            // handle terminal read
-        } else if (oEvent.data.type == "m") {
-            // update MIPS counter
-            document.getElementById('kernelDown').innerHTML = "Millions of Instructions Per Second";
-            $("#kernelDown").hide();
-            $("#progbar").hide();
-            $('#mipsLabel').show();
-            $("#mipsCount").show();
-            document.getElementById("mipsCount").innerHTML = oEvent.data.d;
-        }
-    };
-}
-</script>
 </head>
 
 <body>
@@ -90,13 +58,16 @@ function runWorker() {
                         <div id="isNotChromeBox" class="span12"></div>
 
             <div class="tabbable">
+                <!--
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#tab1" data-toggle="tab">Terminal</a></li>
                 </ul>
+                -->
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab1"> 
                         <div id="buttonbox" class="span12" style="height: 50px;"><div class="span4">
-                                <a id="bootButton" class="btn btn-medium btn-success" onclick="prepTerm(); runWorker(); $('.terminal').focus();">Boot Linux</a> <!--<input type="checkbox" label="Fullscreen Terminal" id="fullscreenOnRun"> Fullscreen Terminal</input>-->   </div>
+                            <!-- <a id="bootButton" class="btn btn-medium btn-success" x-onclick="prepTerm(); runWorker(); $('.terminal').focus();">Boot Linux</a> -->
+                            <!--<input type="checkbox" label="Fullscreen Terminal" id="fullscreenOnRun"> Fullscreen Terminal</input>-->   </div>
 
 
                             <div class="span3" id="kernelDown" align="right">Kernel download progress: </div>
@@ -407,44 +378,74 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 </body>
 
 <!-- misc end-of-page scripts -->
-<script>
+<script type="module">
+import { Terminal } from "./lib/term.js";
 
- //   init_term();
+// angel functions
+let myWorker = null;
+function runWorker() {
+    $('#bootButton').attr('disabled', true);
+    $('#bootButton').html("Running...");
+    $('#bootButton').prop("onclick", null);
+    myWorker = new Worker("webworker.js");
+    myWorker.onmessage = function(oEvent) {
+        if (oEvent.data.type == "t") {
+            // handle term event
+//            write_to_term(oEvent.data.d);
+            term.write(String.fromCharCode(oEvent.data.d));
+        } else if (oEvent.data.type == "p") {
+            // handle prog bar event
+            document.getElementById("bar").style.width = (oEvent.data.d*100).toString() + "%";
+        } else if (oEvent.data.type == "tr") {
+            // handle terminal read
+        } else if (oEvent.data.type == "m") {
+            // update MIPS counter
+            document.getElementById('kernelDown').innerHTML = "Millions of Instructions Per Second";
+            $("#kernelDown").hide();
+            $("#progbar").hide();
+            $('#mipsLabel').show();
+            $("#mipsCount").show();
+            document.getElementById("mipsCount").innerHTML = oEvent.data.d;
+        }
+    };
+}
 
-    // enable bootstrap tooltips
-    $('a').tooltip();
+//   init_term();
 
-    $('#debugtoggle').change(function() {
-        $('#debugbox').toggle();
-    });
+// enable bootstrap tooltips
+$('a').tooltip();
 
+$('#debugtoggle').change(function() {
+    $('#debugbox').toggle();
+});
+
+$('#regLabel').toggle();
+
+$('#updatetoggle').change(function() {
     $('#regLabel').toggle();
-
-    $('#updatetoggle').change(function() {
-        $('#regLabel').toggle();
-        $('#regLabelAlt').toggle();
-    });
+    $('#regLabelAlt').toggle();
+});
 
 //$(function() {
 //   $('#consoleBox').focus();
 //});
 
 
-    var elem = document.getElementById('consoleBox');
-    document.getElementById('bootButton').addEventListener('click', function () {
+var elem = document.getElementById('consoleBox');
+//document.getElementById('bootButton').addEventListener('click', function () {
     /*
     if (screenfull.enabled && document.getElementById('fullscreenOnRun').checked) {
         screenfull.request(elem);
     }
     */
-});
+//});
 
-term = new Terminal({
-                    cols: 129,
-                    rows: 35,
-                    cursorBlink: true,
-                    useStyle: true,
-                     } );
+const term = new Terminal({
+    cols: 129,
+    rows: 35,
+    cursorBlink: true,
+    useStyle: true,
+});
 
 //term.parent = "consoleBox";
 //term.open(document.getElementById("consoleBox"));
@@ -454,7 +455,7 @@ term = new Terminal({
 //    myWorker.postMessage({"type": "u", "inp": indata2});
 //});
 
-isChrome = function() { 
+const isChrome = function() { 
   return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 }
 
@@ -463,32 +464,25 @@ function destroyChromeBox() {
 }
 
 function prepTerm() {
-            term.open(document.getElementById("consoleBox"));
-            term.handler = (function a (indata2) {
-                myWorker.postMessage({"type": "u", "inp": indata2});
-            });
-
+    term.open(document.getElementById("consoleBox"));
+    term.handler = (function a (indata2) {
+        myWorker.postMessage({"type": "u", "inp": indata2});
+    });
 }
 
+prepTerm();
+runWorker();
+$('.terminal').focus();
 
 if (!isChrome()) {
     document.getElementById("isNotChromeBox").innerHTML += "<div class='alert alert-error'>  <button type='button' class='close' data-dismiss='alert' onclick='destroyChromeBox()'>&times;</button>ANGEL performs optimally on Google Chrome. Users of other browsers may observe severely decreased performance.</div>";
 } else {
     $( "#isNotChromeBox" ).remove()
 }
-
-/*
-// google analytics for riscv.org
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-42751764-1', 'auto');
-  ga('send', 'pageview');
-*/
 </script>
 <!-- set up shepherd helper for the user-->
+<!--
 <script src="ui/shepherdconfig.js"></script>
+-->
 
 </html>
