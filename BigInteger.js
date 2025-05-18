@@ -17,8 +17,6 @@
 
 		<BigInteger>
 */
-//(function(exports) {
-//"use strict";
 /*
 	Class: BigInteger
 	An arbitrarily-large integer.
@@ -1568,54 +1566,3 @@ var MAX_EXP = BigInteger(0x7FFFFFFF);
 // Constant: MAX_EXP
 // The largest exponent allowed in <pow> and <exp10> (0x7FFFFFFF or 2147483647).
 BigInteger.MAX_EXP = MAX_EXP;
-
-/*
-(function() {
-	function makeUnary(fn) {
-		return function(a) {
-			return fn.call(BigInteger(a));
-		};
-	}
-
-	function makeBinary(fn) {
-		return function(a, b) {
-			return fn.call(BigInteger(a), BigInteger(b));
-		};
-	}
-
-	function makeTrinary(fn) {
-		return function(a, b, c) {
-			return fn.call(BigInteger(a), BigInteger(b), BigInteger(c));
-		};
-	}
-
-	(function() {
-		var i, fn;
-		var unary = "toJSValue,isEven,isOdd,sign,isZero,isNegative,abs,isUnit,square,negate,isPositive,toString,next,prev,log".split(",");
-		var binary = "compare,remainder,divRem,subtract,add,quotient,divide,multiply,pow,compareAbs".split(",");
-		var trinary = ["modPow"];
-
-		for (i = 0; i < unary.length; i++) {
-			fn = unary[i];
-			BigInteger[fn] = makeUnary(BigInteger.prototype[fn]);
-		}
-
-		for (i = 0; i < binary.length; i++) {
-			fn = binary[i];
-			BigInteger[fn] = makeBinary(BigInteger.prototype[fn]);
-		}
-
-		for (i = 0; i < trinary.length; i++) {
-			fn = trinary[i];
-			BigInteger[fn] = makeTrinary(BigInteger.prototype[fn]);
-		}
-
-		BigInteger.exp10 = function(x, n) {
-			return BigInteger(x).exp10(n);
-		};
-	})();
-})();
-
-//exports.BigInteger = BigInteger;
-//})(typeof exports !== 'undefined' ? exports : this);
-*/

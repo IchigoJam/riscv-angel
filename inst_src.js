@@ -2,7 +2,7 @@ import { Long } from "./Long.js";
 import { PCR, SR } from "./mappings.js";
 import { long_less_than_unsigned, RISCVTrap, signed_to_unsigned } from "./utils.js";
 import { TLB, TLBSIZE, ITLB, ITLBstuff } from "./mmu.js";
-import { BigInteger } from "./lib/javascript-biginteger/biginteger.js";
+import { BigInteger } from "./BigInteger.js";
 import { postMessage } from "./postMessage.js";
 
 //const BigInteger = n => new BigInt(n);
