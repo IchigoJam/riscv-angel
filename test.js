@@ -1,6 +1,5 @@
 import { chainedFileLoader } from "./elfload.js";
 import { CPU } from "./cpu.js";
-//import { Long } from "./lib/closure-compiled/long.js";
 
 // this code will run in a separate worker and interface with the run.html 
 // page's DOM through message passing
