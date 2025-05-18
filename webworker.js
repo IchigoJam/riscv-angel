@@ -8,7 +8,7 @@ importScripts("lib/javascript-biginteger/biginteger.js");
 Long = goog.math.Long;
 
 importScripts("devices/character.js", "lib/binfile/binfile.js",
-        "mappings.js", "utils.js", "mmu.js", "trap.js", "elfload.js", "inst.js",
+        "mappings.js", "utils.js", "mmu.js", "trap.js", "elfload.js", "inst_src.js",
         "cpu.js", "elfrun.js");
 
 //onmessage = function(oEvent) {
