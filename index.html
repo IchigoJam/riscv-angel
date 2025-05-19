@@ -8,7 +8,6 @@
 
 <script src="lib/screenfull/screenfull.js"></script>
 
-
 <!-- bootstrap -->
 <link href="style/css/bootstrap.min.css" rel="stylesheet">
 <!--<link href="style/css/bootstrap-responsive.min.css" rel="stylesheet">-->
@@ -51,8 +50,6 @@
 
     <div class="row-fluid marketing">
         <div class="span12">
-                        <div id="isNotChromeBox" class="span12"></div>
-
             <div class="tabbable">
                 <!--
                 <ul class="nav nav-tabs">
@@ -451,14 +448,6 @@ const term = new Terminal({
 //    myWorker.postMessage({"type": "u", "inp": indata2});
 //});
 
-const isChrome = function() { 
-  return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-}
-
-function destroyChromeBox() {
-    $( "#isNotChromeBox" ).remove()
-}
-
 function prepTerm() {
     term.open(document.getElementById("consoleBox"));
     term.handler = (function a (indata2) {
@@ -469,12 +458,6 @@ function prepTerm() {
 prepTerm();
 runWorker();
 $('.terminal').focus();
-
-if (!isChrome()) {
-    document.getElementById("isNotChromeBox").innerHTML += "<div class='alert alert-error'>  <button type='button' class='close' data-dismiss='alert' onclick='destroyChromeBox()'>&times;</button>ANGEL performs optimally on Google Chrome. Users of other browsers may observe severely decreased performance.</div>";
-} else {
-    $( "#isNotChromeBox" ).remove()
-}
 </script>
 <!-- set up shepherd helper for the user-->
 <!--
