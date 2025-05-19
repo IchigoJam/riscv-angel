@@ -9,10 +9,6 @@
 <script src="lib/screenfull/screenfull.js"></script>
 
 
-<!-- load angel interface components -->
-<script src="devices/character.js"></script>
-<script src="utils.js"></script>
-
 <!-- bootstrap -->
 <link href="style/css/bootstrap.min.css" rel="stylesheet">
 <!--<link href="style/css/bootstrap-responsive.min.css" rel="stylesheet">-->
@@ -387,7 +383,7 @@ function runWorker() {
     $('#bootButton').attr('disabled', true);
     $('#bootButton').html("Running...");
     $('#bootButton').prop("onclick", null);
-    myWorker = new Worker("webworker.js");
+    myWorker = new Worker("webworker.js", { type: "module" });
     myWorker.onmessage = function(oEvent) {
         if (oEvent.data.type == "t") {
             // handle term event

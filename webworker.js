@@ -1,29 +1,25 @@
+import { chainedFileLoader } from "./elfload.js";
+import { CPU } from "./cpu.js";
+import { readTest, elfRunNextInst } from "./elfrun.js";
+
 // this code will run in a separate worker and interface with the run.html 
 // page's DOM through message passing
-
-importScripts("lib/closure-compiled/long.js");
-goog.require("goog.math.Long");
-
-importScripts("lib/javascript-biginteger/biginteger.js");
-Long = goog.math.Long;
-
-importScripts("devices/character.js", "lib/binfile/binfile.js",
-        "mappings.js", "utils.js", "mmu.js", "trap.js", "elfload.js", "inst_src.js",
-        "cpu.js", "elfrun.js");
 
 //onmessage = function(oEvent) {
 //            // handle term event
 //            console.log(oEvent.data);
 //};
 
+const RISCV = new CPU();
+
 self.addEventListener("message", function (oEvent) {
     if (oEvent.data.type == "r") {
         //continue running
         readTest.push("\n");
-        elfRunNextInst();
+        elfRunNextInst(RISCV);
     } else if (oEvent.data.type == "u") {
         // copy user input
-        DAT = oEvent.data.inp;
+        const DAT = oEvent.data.inp;
         if (DAT == 'THIS_IS_ESC') {
             readTest.push(DAT);
         } else {
@@ -31,19 +27,31 @@ self.addEventListener("message", function (oEvent) {
                 readTest.push(DAT.charAt(x));
             }
         }
-        elfRunNextInst();
+        elfRunNextInst(RISCV);
     }
 }, false);
 
 function runCodeC(userIn) {
     //compilestat = document.getElementById("compilestatus");
     //compilestat.innerHTML = "Compile Status: Compiling, waiting for server response.";
-    filesList = ["lib/riscv_compiled/vmlinux" ];
+    const filesList = ["lib/riscv_compiled/vmlinux" ];
 
     handle_file_continue(filesList);
-
-    RISCV = new CPU();
 }
+
+function GetBinaryFile(strURL, fnCallback, filesList, bBypassCache) {
+  const callback = (bin) => {
+    const lastElem = strURL.split("/");
+    const fn = lastElem[lastElem.length - 1];
+    fnCallback(RISCV, bin, fn, filesList, handle_file_continue);
+  };
+  const isonbrowser = globalThis.document !== null;
+  if (isonbrowser) {
+    fetch(strURL).then(res => res.bytes()).then(callback);
+  } else {
+    Deno.readFile(strURL).then(callback);
+  }
+};
 
 function handle_file_continue(filesList) {
     //document.getElementById("testresult").innerHTML = "ELF not loaded";
@@ -52,7 +60,7 @@ function handle_file_continue(filesList) {
     //debugtab = document.getElementById("debugprops");
 
     // execution pause
-    pauseExec = false;
+    //pauseExec = false;
 
     GetBinaryFile(filesList[0], chainedFileLoader, filesList.slice(1, filesList.length));
 }

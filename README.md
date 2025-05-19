@@ -1,7 +1,7 @@
 riscv-angel
 =====
 
-ANGEL is a Javascript RISC-V ISA (RV64) Simulator that runs riscv-linux with BusyBox.
+ANGEL is a JavaScript (ES Modules) RISC-V ISA (RV64) Simulator that runs riscv-linux with BusyBox.
 
 Check out the demo running at: https://ichigojam.github.io/riscv-angel/
 
@@ -9,7 +9,7 @@ Check out the demo running at: https://ichigojam.github.io/riscv-angel/
 
 ANGEL is not under active development - it implements old draft versions of the RISC-V specs (~late 2014)
 
-## Building/Running locally
+## Running locally
 
 Start a webserver in the angel directory, e.g.
 

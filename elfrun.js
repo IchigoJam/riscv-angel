@@ -3,10 +3,11 @@ import { PCR, SR } from "./mappings.js";
 import { RISCVTrap } from "./utils.js";
 import { handle_trap } from "./trap.js";
 import { postMessage } from "./postMessage.js";
+import { Long } from "./Long.js";
 
 // run one instruction at a time, isolate from elfload
 
-var readTest = [];
+export var readTest = [];
 
 var lastCharWritten = 0;
 
